@@ -1,0 +1,47 @@
+# Sendchamp
+> Sendchamp is a cloud communication platform that provides SMS, Email, WhatsApp, Voice, and Verification APIs for businesses across Africa.
+
+## AI Tooling
+- [Sendchamp AI (GitHub)](https://github.com/sendchamp/ai): Official MCP server, Agent Skills, OpenAPI specs, and integration guides for AI coding assistants
+- [Agent Skills](https://docs.sendchamp.com/ai/agent-skills): Install Sendchamp skills for Cursor, Claude Code, and Codex via skills.sh
+- [MCP Server](https://docs.sendchamp.com/ai/mcp-server): Read-only docs MCP at mcp.sendchamp.com/docs for API search in your IDE
+- [OpenAPI Spec (SMS + Verification)](https://github.com/sendchamp/ai/blob/main/openapi/sms-verification.yaml): Machine-readable API schema for SMS and OTP endpoints
+
+## Marketing Site
+- [Home](https://www.sendchamp.com/): Sendchamp marketing homepage
+- [SMS API](https://www.sendchamp.com/sms): SMS messaging API for bulk and transactional SMS
+- [Email API](https://www.sendchamp.com/email): Email delivery API for transactional and marketing emails
+- [WhatsApp API](https://www.sendchamp.com/whatsapp): WhatsApp Business API for messaging and notifications
+- [Voice API](https://www.sendchamp.com/voice): Voice call API for IVR and voice notifications
+- [Verification API](https://www.sendchamp.com/verification): OTP and verification API for user authentication
+- [Marketing Platform](https://www.sendchamp.com/marketing): No-code marketing campaign tools
+- [Pricing](https://www.sendchamp.com/pricing): Sendchamp pricing for all channels
+- [Use Cases](https://www.sendchamp.com/use-cases): Sendchamp use cases and industry solutions
+- [About](https://www.sendchamp.com/about): About Sendchamp company and team
+- [Customers](https://www.sendchamp.com/customers): Customer stories and case studies
+- [Contact](https://www.sendchamp.com/contact): Contact Sendchamp sales and support
+
+## Developer Docs
+- [Guides](https://docs.sendchamp.com): Step-by-step guides for integrating Sendchamp APIs
+- [API Reference](https://sendchamp.readme.io): Complete API reference documentation
+- [Tutorials](https://developers.sendchamp.com/tutorials): Developer tutorials and walkthroughs
+- [SDKs and Libraries](https://developers.sendchamp.com/libraries): Official SDKs and client libraries for Sendchamp APIs
+- [API Simulator](https://simulator.sendchamp.com): Interactive API simulator for testing requests
+
+## App
+- [Dashboard Login](https://my.sendchamp.com/login): Sendchamp dashboard login for existing customers
+- [Sign Up](https://my.sendchamp.com/signup): Create a free Sendchamp account
+
+## Community and Resources
+- [Blog](https://blog.sendchamp.com): Sendchamp product updates, engineering blog, and industry insights
+- [Community Forum](https://community.sendchamp.com): Sendchamp community discussion forum
+- [System Status](https://status.sendchamp.com): Sendchamp platform status and incident updates
+- [Support Portal](https://support.go54.com/ticket/create): Submit a support ticket to the Sendchamp team
+- [X / Twitter](https://twitter.com/sendchamp): Sendchamp on X (formerly Twitter)
+- [LinkedIn](https://www.linkedin.com/company/sendchamp): Sendchamp on LinkedIn
+- [Facebook](https://facebook.com/sendchamp): Sendchamp on Facebook
+- [Instagram](https://www.instagram.com/sendchamphq): Sendchamp on Instagram
+
+## Legal
+- [Privacy Policy](https://www.sendchamp.com/privacy): Sendchamp privacy policy
+- [Terms of Service](https://www.sendchamp.com/terms-of-service): Sendchamp terms of service

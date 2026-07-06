@@ -1,0 +1,375 @@
+openapi: 3.1.0
+info:
+  title: Sendchamp SMS & Verification API
+  description: |
+    Sendchamp Open API for SMS messaging and OTP verification.
+    Authenticate with your dashboard access key via Bearer token.
+    Base URL: https://api.sendchamp.com/api/v1
+  version: 1.0.0
+  contact:
+    name: Sendchamp Support
+    url: https://support.go54.com/ticket/create
+  license:
+    name: Proprietary
+    url: https://www.sendchamp.com/terms-of-service
+
+servers:
+  - url: https://api.sendchamp.com/api/v1
+    description: Production
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: SMS
+    description: Send transactional and bulk SMS
+  - name: Verification
+    description: OTP send and confirm
+  - name: Wallet
+    description: Account balance
+
+paths:
+  /sms/send:
+    post:
+      operationId: sendSms
+      tags: [SMS]
+      summary: Send SMS
+      description: |
+        Send a single SMS or multiple SMS in one request.
+        Requires an approved sender name and sufficient wallet balance.
+        Use route `non_dnd` for transactional/OTP traffic in Nigeria.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendSmsRequest'
+            example:
+              to: "+2348012345678"
+              message: "Your order #1234 has shipped."
+              sender_name: "MyBrand"
+              route: "non_dnd"
+              country_code: "NG"
+      responses:
+        '200':
+          description: SMS accepted for delivery
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /sms/send-bulk:
+    post:
+      operationId: sendBulkSms
+      tags: [SMS]
+      summary: Send bulk SMS
+      description: |
+        Send SMS to all contacts in a contact list.
+        Route is specified by route_id (dashboard-managed).
+        Allowed route names: dnd, non_dnd, international.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendBulkSmsRequest'
+      responses:
+        '200':
+          description: Bulk SMS job created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /verification/send:
+    post:
+      operationId: sendVerification
+      tags: [Verification]
+      summary: Send OTP verification
+      description: |
+        Generate and deliver a one-time passcode via SMS, email, WhatsApp, or voice.
+        Returns a verification reference required for confirmation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendVerificationRequest'
+            example:
+              channel: sms
+              customer_mobile_number: "+2348012345678"
+              sender: "MyBrand"
+              token_type: numeric
+              token_length: 6
+              expiration_time: 10
+      responses:
+        '200':
+          description: OTP sent
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SendVerificationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /verification/confirm:
+    post:
+      operationId: confirmVerification
+      tags: [Verification]
+      summary: Confirm OTP verification
+      description: |
+        Validate a user-submitted OTP against a verification reference.
+        Rejects expired or already-used codes.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmVerificationRequest'
+            example:
+              verification_code: "482910"
+              verification_reference: "MN-OTP-abc123"
+      responses:
+        '200':
+          description: OTP confirmed
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ConfirmVerificationResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /wallet-balance:
+    get:
+      operationId: getWalletBalance
+      tags: [Wallet]
+      summary: Get wallet balance
+      description: Returns the current wallet balance for the authenticated business.
+      responses:
+        '200':
+          description: Wallet balance
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/WalletBalanceResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: Dashboard access key from my.sendchamp.com → Settings → API Keys
+
+  schemas:
+    SendSmsRequest:
+      type: object
+      required: [to, message, sender_name, route]
+      properties:
+        to:
+          oneOf:
+            - type: string
+              description: Single recipient in E.164 format
+            - type: array
+              items:
+                type: string
+              description: Multiple recipients in E.164 format
+        message:
+          type: string
+          minLength: 1
+        sender_name:
+          type: string
+          description: Approved sender ID registered on your account
+        route:
+          type: string
+          enum: [dnd, non_dnd, international]
+          description: |
+            dnd = DND-registered Nigerian promotional traffic
+            non_dnd = transactional/OTP (default for alerts)
+            international = destinations outside Nigeria
+        country_code:
+          type: string
+          description: ISO country code (e.g. NG, KE, GH)
+
+    SendBulkSmsRequest:
+      type: object
+      required: [message, contact_list_id, sender_id, route_id]
+      properties:
+        message:
+          type: string
+        contact_list_id:
+          type: string
+          description: UID of a contact list from the dashboard
+        sender_id:
+          type: integer
+          description: Numeric sender ID from the dashboard
+        route_id:
+          type: integer
+          description: Numeric route ID from the dashboard
+
+    SendVerificationRequest:
+      type: object
+      required: [channel, token_type, token_length, expiration_time]
+      properties:
+        channel:
+          type: string
+          enum: [sms, email, whatsapp, voice]
+        sender:
+          type: string
+          description: Sender name (required for SMS/WhatsApp)
+        sender_email_address:
+          type: string
+          format: email
+        token:
+          type: string
+          description: Optional custom token; auto-generated if omitted
+        token_type:
+          type: string
+          enum: [numeric, alphanumeric]
+        token_length:
+          oneOf:
+            - type: integer
+            - type: string
+          description: Code length (default 6)
+        expiration_time:
+          oneOf:
+            - type: integer
+            - type: string
+          description: Expiry in minutes (default 10)
+        customer_mobile_number:
+          type: string
+          description: Required for sms, whatsapp, voice channels
+        customer_email_address:
+          type: string
+          format: email
+          description: Required for email channel
+        meta_data:
+          type: object
+          additionalProperties: true
+
+    ConfirmVerificationRequest:
+      type: object
+      required: [verification_code, verification_reference]
+      properties:
+        verification_code:
+          type: string
+          description: OTP entered by the user
+        verification_reference:
+          type: string
+          description: Reference returned from /verification/send
+
+    SendVerificationResponse:
+      type: object
+      properties:
+        business_uid:
+          type: string
+        reference:
+          type: string
+        channel:
+          type: object
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            is_active:
+              type: boolean
+        token:
+          type: string
+          description: Generated OTP (do not expose to end users in production)
+        status:
+          type: string
+
+    ConfirmVerificationResponse:
+      type: object
+      properties:
+        channel:
+          type: string
+        token:
+          type: string
+        token_type:
+          type: string
+        token_length:
+          type: integer
+        token_duration:
+          type: string
+        status:
+          type: string
+          enum: [verified, expired, processing]
+        phone:
+          type: string
+        email:
+          type: string
+        reference:
+          type: string
+
+    WalletBalanceResponse:
+      type: object
+      properties:
+        business_name:
+          type: string
+        wallet_balance:
+          type: number
+          format: double
+
+    ApiSuccessResponse:
+      type: object
+      properties:
+        status_code:
+          type: integer
+        message:
+          type: string
+        data:
+          type: object
+
+    ApiErrorResponse:
+      type: object
+      properties:
+        status_code:
+          type: integer
+        message:
+          type: string
+        data:
+          nullable: true
+
+  responses:
+    BadRequest:
+      description: Invalid request or insufficient balance
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
+    Unauthorized:
+      description: Invalid or missing access key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiErrorResponse'
