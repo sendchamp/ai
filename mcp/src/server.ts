@@ -19,16 +19,22 @@ function createMcpServer(): McpServer {
     version: "0.1.0",
   });
 
-  server.tool(
+  server.registerTool(
     "sendchamp__search",
-    "Search Sendchamp documentation and API operations by natural language query. Use source='docs' for conceptual guides, source='api' for API endpoints, source='guide' for curated integration guides, or source='all' (default) when unsure. Returns ranked results with IDs for sendchamp__retrieve.",
     {
-      query: z.string().describe("Natural language search query"),
-      source: z
-        .enum(["api", "docs", "guide", "all"])
-        .optional()
-        .describe("Filter by content type (default: all)"),
-      limit: z.number().int().min(1).max(20).optional().describe("Max results (default: 8)"),
+      description:
+        "Search Sendchamp documentation and API operations by natural language query. Use source='docs' for conceptual guides, source='api' for API endpoints, source='guide' for curated integration guides, or source='all' (default) when unsure. Returns ranked results with IDs for sendchamp__retrieve.",
+      inputSchema: {
+        query: z.string().describe("Natural language search query"),
+        source: z
+          .enum(["api", "docs", "guide", "all"])
+          .optional()
+          .describe("Filter by content type (default: all)"),
+        limit: z.number().int().min(1).max(20).optional().describe("Max results (default: 8)"),
+      },
+      annotations: {
+        readOnlyHint: true,
+      },
     },
     async ({ query, source, limit }) => {
       const results = searchEntries({
@@ -53,11 +59,21 @@ function createMcpServer(): McpServer {
     },
   );
 
-  server.tool(
+  server.registerTool(
     "sendchamp__retrieve",
-    "Fetch full documentation or API schema for a specific ID returned by sendchamp__search. Returns complete parameter schemas, guides, or doc links.",
     {
-      id: z.string().describe("Document or API operation ID from search results (e.g. api:sendSms, guide:otp-flow)"),
+      description:
+        "Fetch full documentation or API schema for a specific ID returned by sendchamp__search. Returns complete parameter schemas, guides, or doc links.",
+      inputSchema: {
+        id: z
+          .string()
+          .describe(
+            "Document or API operation ID from search results (e.g. api:sendSms, guide:otp-flow)",
+          ),
+      },
+      annotations: {
+        readOnlyHint: true,
+      },
     },
     async ({ id }) => {
       const entry = getEntryById(id);
