@@ -25,6 +25,7 @@ Replace live `llms.txt` with [`docs/llms.txt`](docs/llms.txt) — adds AI Toolin
 ## Marketplace
 
 - awesome-mcp-servers PR: https://github.com/punkpeye/awesome-mcp-servers/pull/9530
+- **Glama:** Listed and passing checks at https://glama.ai/mcp/servers/sendchamp/ai
 - Social copy: [`docs/marketplace-launch.md`](docs/marketplace-launch.md)
 
 ## skills.sh indexing

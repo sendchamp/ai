@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "sendchamp-sms-send-message": {
+      "source": "sendchamp/ai",
+      "sourceType": "github",
+      "skillPath": "skills/sendchamp/sendchamp-sms-send-message/SKILL.md",
+      "computedHash": "e2caca5553269bd924e174c623998402b1c11f8af2b047879da04ae22df6289e"
+    },
+    "sendchamp-verify-send-otp": {
+      "source": "sendchamp/ai",
+      "sourceType": "github",
+      "skillPath": "skills/sendchamp/sendchamp-verify-send-otp/SKILL.md",
+      "computedHash": "f80af3c175ffb3c76ca61635d335b9fde6d57a5c994a79baf24833bd11c2b445"
+    }
+  }
+}

@@ -1,5 +1,7 @@
 # Sendchamp AI
 
+[![ai MCP server](https://glama.ai/mcp/servers/sendchamp/ai/badges/score.svg)](https://glama.ai/mcp/servers/sendchamp/ai)
+
 The official one-stop shop for AI agents and developers building with [Sendchamp](https://www.sendchamp.com) — Africa's cloud communications platform for SMS, OTP verification, WhatsApp, Voice, and Email.
 
 ## What's here
