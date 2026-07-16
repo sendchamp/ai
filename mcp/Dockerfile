@@ -12,6 +12,7 @@ ENV NODE_ENV=production
 ENV PORT=3100
 ENV HOST=0.0.0.0
 ENV SENDCHAMP_AI_ROOT=/app
+ENV MCP_TRANSPORT=http
 COPY mcp/package.json mcp/package-lock.json* ./mcp/
 WORKDIR /app/mcp
 RUN npm install --omit=dev
@@ -21,4 +22,4 @@ COPY openapi ./openapi
 COPY guides ./guides
 WORKDIR /app/mcp
 EXPOSE 3100
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/server.js", "--http"]
