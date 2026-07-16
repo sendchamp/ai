@@ -1,6 +1,7 @@
 import express from "express";
 import { randomUUID } from "node:crypto";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
@@ -99,80 +100,95 @@ function createMcpServer(): McpServer {
   return server;
 }
 
-const app = express();
-app.use(express.json());
+// Stdio mode: used by mcp-proxy and local MCP clients (e.g. Glama hosting).
+// HTTP (Streamable HTTP) remains the default for mcp.sendchamp.com.
+const useStdio =
+  process.argv.includes("--stdio") || process.env.MCP_TRANSPORT === "stdio";
 
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok", service: "sendchamp-docs-mcp", version: "0.1.0" });
-});
+if (useStdio) {
+  const server = createMcpServer();
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+} else {
+  startHttpServer();
+}
 
-const handleMcpPost = async (req: express.Request, res: express.Response) => {
-  const sessionId = req.headers["mcp-session-id"] as string | undefined;
+function startHttpServer(): void {
+  const app = express();
+  app.use(express.json());
 
-  try {
-    if (sessionId && transports.has(sessionId)) {
-      const transport = transports.get(sessionId)!;
-      await transport.handleRequest(req, res, req.body);
-      return;
-    }
+  app.get("/health", (_req, res) => {
+    res.json({ status: "ok", service: "sendchamp-docs-mcp", version: "0.1.0" });
+  });
 
-    if (!sessionId && isInitializeRequest(req.body)) {
-      const transport = new StreamableHTTPServerTransport({
-        sessionIdGenerator: () => randomUUID(),
-        onsessioninitialized: (id) => {
-          transports.set(id, transport);
-        },
-      });
+  const handleMcpPost = async (req: express.Request, res: express.Response) => {
+    const sessionId = req.headers["mcp-session-id"] as string | undefined;
 
-      transport.onclose = () => {
-        const sid = transport.sessionId;
-        if (sid) transports.delete(sid);
-      };
+    try {
+      if (sessionId && transports.has(sessionId)) {
+        const transport = transports.get(sessionId)!;
+        await transport.handleRequest(req, res, req.body);
+        return;
+      }
 
-      const server = createMcpServer();
-      await server.connect(transport);
-      await transport.handleRequest(req, res, req.body);
-      return;
-    }
+      if (!sessionId && isInitializeRequest(req.body)) {
+        const transport = new StreamableHTTPServerTransport({
+          sessionIdGenerator: () => randomUUID(),
+          onsessioninitialized: (id) => {
+            transports.set(id, transport);
+          },
+        });
 
-    res.status(400).json({
-      jsonrpc: "2.0",
-      error: { code: -32000, message: "Bad Request: invalid session or not an initialize request" },
-      id: null,
-    });
-  } catch (err) {
-    console.error("MCP error:", err);
-    if (!res.headersSent) {
-      res.status(500).json({
+        transport.onclose = () => {
+          const sid = transport.sessionId;
+          if (sid) transports.delete(sid);
+        };
+
+        const server = createMcpServer();
+        await server.connect(transport);
+        await transport.handleRequest(req, res, req.body);
+        return;
+      }
+
+      res.status(400).json({
         jsonrpc: "2.0",
-        error: { code: -32603, message: "Internal server error" },
+        error: { code: -32000, message: "Bad Request: invalid session or not an initialize request" },
         id: null,
       });
+    } catch (err) {
+      console.error("MCP error:", err);
+      if (!res.headersSent) {
+        res.status(500).json({
+          jsonrpc: "2.0",
+          error: { code: -32603, message: "Internal server error" },
+          id: null,
+        });
+      }
     }
-  }
-};
+  };
 
-const handleMcpGetDelete = async (req: express.Request, res: express.Response) => {
-  const sessionId = req.headers["mcp-session-id"] as string | undefined;
-  if (!sessionId || !transports.has(sessionId)) {
-    res.status(400).send("Invalid or missing session ID");
-    return;
-  }
-  const transport = transports.get(sessionId)!;
-  await transport.handleRequest(req, res);
-};
+  const handleMcpGetDelete = async (req: express.Request, res: express.Response) => {
+    const sessionId = req.headers["mcp-session-id"] as string | undefined;
+    if (!sessionId || !transports.has(sessionId)) {
+      res.status(400).send("Invalid or missing session ID");
+      return;
+    }
+    const transport = transports.get(sessionId)!;
+    await transport.handleRequest(req, res);
+  };
 
-// Primary endpoint (Twilio-style): https://mcp.sendchamp.com/docs
-app.post("/docs", handleMcpPost);
-app.get("/docs", handleMcpGetDelete);
-app.delete("/docs", handleMcpGetDelete);
+  // Primary endpoint (Twilio-style): https://mcp.sendchamp.com/docs
+  app.post("/docs", handleMcpPost);
+  app.get("/docs", handleMcpGetDelete);
+  app.delete("/docs", handleMcpGetDelete);
 
-// Alias for local dev
-app.post("/mcp", handleMcpPost);
-app.get("/mcp", handleMcpGetDelete);
-app.delete("/mcp", handleMcpGetDelete);
+  // Alias for local dev
+  app.post("/mcp", handleMcpPost);
+  app.get("/mcp", handleMcpGetDelete);
+  app.delete("/mcp", handleMcpGetDelete);
 
-app.listen(PORT, HOST, () => {
-  console.log(`Sendchamp docs MCP listening on http://${HOST}:${PORT}/mcp`);
-  console.log(`Health check: http://${HOST}:${PORT}/health`);
-});
+  app.listen(PORT, HOST, () => {
+    console.log(`Sendchamp docs MCP listening on http://${HOST}:${PORT}/mcp`);
+    console.log(`Health check: http://${HOST}:${PORT}/health`);
+  });
+}
