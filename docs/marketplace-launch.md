@@ -10,6 +10,8 @@ Add under **Communication** or **Documentation** section:
 
 PR target: https://github.com/punkpeye/awesome-mcp-servers
 
+**Submitted:** https://github.com/punkpeye/awesome-mcp-servers/pull/9530
+
 ## modelcontextprotocol/servers
 
 Submit entry if eligible per their CONTRIBUTING.md with:
