@@ -130,6 +130,10 @@ function startHttpServer(): void {
 	const app = express();
 	app.use(express.json());
 
+	app.get('/', (_req, res) => {
+		res.type('text/plain').send('Welcome to Sendchamp MCP');
+	});
+
 	app.get('/health', (_req, res) => {
 		res.json({ status: 'ok', service: 'sendchamp-docs-mcp', version: '0.1.0' });
 	});
