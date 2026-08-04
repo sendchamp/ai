@@ -19,7 +19,7 @@ Deploy the read-only docs MCP server to `mcp.sendchamp.com`.
 From repo root:
 
 ```bash
-docker build -f mcp/Dockerfile -t sendchamp-mcp-docs .
+docker build -t sendchamp-mcp-docs .
 docker run -p 3100:3100 -e SENDCHAMP_AI_ROOT=/app sendchamp-mcp-docs
 curl http://localhost:3100/health
 ```
